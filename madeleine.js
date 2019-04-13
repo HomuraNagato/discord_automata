@@ -1,19 +1,22 @@
-
 require('dotenv').config()
 
 const Discord = require('discord.js');
 const client = new Discord.Client();
+const fs = require('fs');
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
-});
+fs.readdir('./events/', (err, files) => {
 
-client.on('message', msg => {
-    if (msg.content === 'ping') {
-	msg.reply('pong');
-    }
+    // ignore emacs ~ files
+    files = files.filter(item => !(/~/g).test(item));
+    
+    files.forEach(file => {
+	const eventHandler = require(`./events/${file}`);
+	const eventName = file.split('.')[0];
+	console.log('files', file, eventHandler, eventName);
+	client.on(eventName, (...args) => eventHandler(client, ...args));
+    });
 });
 
 client.login(process.env.BOT_TOKEN);
 
-console.log(client);
+//console.log(client);
